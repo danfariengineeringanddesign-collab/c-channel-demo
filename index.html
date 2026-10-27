@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="C-Channel Configurator: 32 faithful AISC C sections (C3-C15) for CATIA and SolidWorks, plus 288 pre-generated STEP files at any length you choose.">
+<title>C-Channel Configurator — Danfari Engineering &amp; Design (32 AISC C Sections)</title>
+<style>
+  body{font-family:system-ui,Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:16px}
+  .card{max-width:900px;margin:auto;background:#1e293b;border-radius:16px;padding:20px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+  h1{font-size:21px;margin:0 0 4px} .sub{color:#94a3b8;font-size:13px;margin-bottom:16px}
+  select{padding:10px 12px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#fff;font-size:16px;font-weight:700}
+  label{font-weight:600;font-size:14px;display:block;margin:16px 0 8px}
+  .pesos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .pesos button{background:#334155;color:#e2e8f0;border:2px solid transparent;border-radius:10px;padding:10px 4px;font-size:15px;font-weight:700;cursor:pointer}
+  .pesos button small{display:block;font-weight:400;font-size:11px;color:#94a3b8}
+  .pesos button.activo{border-color:#38bdf8;background:#0c4a6e}
+  input[type=number]{width:130px;padding:9px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-size:16px}
+  input[type=range]{width:100%}
+  .fila{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  td,th{padding:6px 8px;border-bottom:1px solid #334155;text-align:left} th{color:#94a3b8;font-weight:500}
+  .total{background:#0c4a6e;border-radius:10px;padding:12px;margin-top:14px;font-size:15px}
+  .btn{display:block;width:100%;margin-top:12px;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn1{background:#2563eb;color:#ffffff}.btn2{background:#334155;color:#e2e8f0}
+  #estado{font-size:13px;color:#fbbf24;min-height:18px;margin-top:8px;white-space:pre-wrap}
+  @media (max-width:600px){.pesos{grid-template-columns:repeat(2,1fr)}}
+  svg{background:#0b1220;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔩 C-Channel Configurator — Demo (32 AISC C Sections)</h1>
+  <div style="display:inline-block;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;margin-bottom:12px">✓ Verified in CATIA V5 and SolidWorks Premium · DEMO — Full pack $10 on Gumroad</div>
+  <div class="sub">First choose <b>which C</b> (C3 to C15), then the <b>weight (lb/ft)</b>: the second selector only shows the weights for that C. Then the <b>length</b> — and that generates the model in CATIA or SolidWorks. There are <b>32 standard AISC/ASTM A6 sections</b> in 10 depths. The profile shown is the <b>faithful</b> one: interior slope 1:6, web-flange fillet from kdes, INTERIOR toe rounded with r2 PROPORTIONAL to each C (r2 = 0.5 × toe thickness: C3 ≈ 0.07–0.08 in, C15 ≈ 0.17–0.19 in) and sharp outside corners. Length L runs along the Z axis, out of the profile plane.</div>
+
+  <label>1) Which C do you need?</label>
+  <div class="fila">
+    <select id="selC">
+      <option value="C3" selected>C3 (3 in)</option><option value="C4">C4 (4 in)</option><option value="C5">C5 (5 in)</option><option value="C6">C6 (6 in)</option><option value="C7">C7 (7 in)</option><option value="C8">C8 (8 in)</option><option value="C9">C9 (9 in)</option><option value="C10">C10 (10 in)</option><option value="C12">C12 (12 in)</option><option value="C15">C15 (15 in)</option>
+    </select>
+    <span id="cInfo" style="color:#94a3b8;font-size:13px"></span>
+  </div>
+
+  <label>2) Section weight — designation (only for this C)</label>
+  <div class="pesos" id="pesos"></div>
+
+  <label>3) Channel length (in)</label>
+  <div class="fila">
+    <input type="number" id="largoIn" value="48" min="4" max="240" step="0.5"> <span>in</span> <span id="largoAviso" style="color:#fbbf24;font-size:13px"></span>
+    <span id="largoFt" style="color:#94a3b8"></span>
+  </div>
+  <input type="range" id="largoSlider" min="4" max="240" step="0.5" value="48">
+
+  <label>4) Section view (light style, dimensions in boxes, auto scale per C)</label>
+  <div style="text-align:center">
+    <svg id="svg" width="700" height="470" viewBox="0 0 700 470" style="flex-shrink:0;max-width:100%;height:auto"></svg>
+  </div>
+
+  <div style="background:#1e3a8a;border:1px solid #2563eb;border-radius:12px;padding:14px;margin-top:16px">
+    <div style="font-size:16px;font-weight:800">Full pack — $10 USD</div>
+    <div style="color:#bfdbfe;font-size:13px;margin-top:4px">32 AISC C sections (C3–C15) · 288 pre-generated STEP files (9 lengths) · CATIA .CATScript and SolidWorks .swb for <b>any</b> length · Single-user license · No 1-to-1 support included.</div>
+    <a href="https://danfari.gumroad.com/l/c-channel-configurator" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;background:#2563eb;color:#fff;padding:10px 16px;border-radius:10px;font-weight:800;text-decoration:none">Buy the full pack on Gumroad — $10</a>
+    <div style="color:#93c5fd;font-size:12px;margin-top:6px">Demo note: replace this link with your real Gumroad product link when you publish it. Free sample below: C5x9 at 48 in.</div>
+  </div>
+  <div style="margin-top:12px"><button class="btn btn1" onclick="usarMuestra()">⬇ Try the free sample: C5x9, 48 in</button></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+    <button class="btn btn1" onclick="descargarCATScript()">⬇ Download .CATScript (CATIA macro, this selection)</button>
+    <button class="btn btn1" onclick="descargarSWB()">⬇ Download .swb (SolidWorks macro, this selection)</button>
+    <button class="btn btn1" onclick="descargarSTEP()">⬇ Download .STEP (this selection)</button>
+  </div>
+  <div id="stepHint" style="font-size:13px;margin-top:8px;min-height:18px"></div>
+  <div style="color:#64748b;font-size:12px">.CATScript and .swb are generated here in the browser, no server, no CATIA/SolidWorks needed to download them. Run the .CATScript in CATIA (Tools &gt; Macro &gt; Macros) or run the .swb in SolidWorks (Tools &gt; Macro &gt; Run) — both create exactly the section and length you selected, no typing. The .STEP button downloads a pre-generated STEP file from the step/ pack (12, 24, 36, 48, 60, 72, 96, 120, 144 in). For any other length, use .CATScript or .swb, which are generated in the browser for exactly the length you selected.</div>
+  <div style="color:#94a3b8;font-size:12px">STEP works with any CAD that imports STEP — Inventor, Fusion 360, Solid Edge, Onshape, Creo, NX, FreeCAD, Rhino. STEP is a solid, not parametric; parametric macros are for CATIA and SolidWorks only.</div>
+  <div id="estado"></div>
+  <div>
+    <table id="tabla"></table>
+    <div class="total" id="total"></div>
+  </div>
+
+<div style="margin-top:16px;padding-top:12px;border-top:1px solid #334155;color:#94a3b8;font-size:12px;text-align:center">© 2026 Danfari Engineering &amp; Design · C-Channel Configurator · Single-user license — please do not redistribute.</div>
+</div>
+
+<script>
+const SECCIONES = {
+ "C15": [{peso:50,desig:"C15x50",bf:3.716,tw:0.716,tf:0.65,kdes:1.4375,area:14.7,Ix:404,Iy:11.0,xbar:0.799,eo:0.583,depth:15},{peso:40,desig:"C15x40",bf:3.52,tw:0.52,tf:0.65,kdes:1.4375,area:11.8,Ix:349,Iy:9.23,xbar:0.778,eo:0.767,depth:15},{peso:33.9,desig:"C15x33.9",bf:3.4,tw:0.4,tf:0.65,kdes:1.4375,area:9.95,Ix:315,Iy:8.13,xbar:0.788,eo:0.896,depth:15}],
+ "C12": [{peso:30,desig:"C12x30",bf:3.17,tw:0.51,tf:0.501,kdes:1.125,area:8.81,Ix:162,Iy:5.14,xbar:0.674,eo:0.618,depth:12},{peso:25,desig:"C12x25",bf:3.047,tw:0.387,tf:0.501,kdes:1.125,area:7.34,Ix:144,Iy:4.47,xbar:0.674,eo:0.746,depth:12},{peso:20.7,desig:"C12x20.7",bf:2.942,tw:0.282,tf:0.501,kdes:1.125,area:6.08,Ix:129,Iy:3.88,xbar:0.698,eo:0.87,depth:12}],
+ "C10": [{peso:30,desig:"C10x30",bf:3.033,tw:0.673,tf:0.436,kdes:1.0,area:8.81,Ix:103,Iy:3.94,xbar:0.649,eo:0.368,depth:10},{peso:25,desig:"C10x25",bf:2.886,tw:0.526,tf:0.436,kdes:1.0,area:7.34,Ix:91.2,Iy:3.36,xbar:0.617,eo:0.494,depth:10},{peso:20,desig:"C10x20",bf:2.739,tw:0.379,tf:0.436,kdes:1.0,area:5.87,Ix:78.9,Iy:2.81,xbar:0.606,eo:0.636,depth:10},{peso:15.3,desig:"C10x15.3",bf:2.6,tw:0.24,tf:0.436,kdes:1.0,area:4.48,Ix:67.4,Iy:2.28,xbar:0.634,eo:0.796,depth:10}],
+ "C9": [{peso:20,desig:"C9x20",bf:2.648,tw:0.448,tf:0.413,kdes:1.0,area:5.87,Ix:60.9,Iy:2.42,xbar:0.583,eo:0.515,depth:9},{peso:15,desig:"C9x15",bf:2.485,tw:0.285,tf:0.413,kdes:1.0,area:4.41,Ix:51.0,Iy:1.93,xbar:0.586,eo:0.681,depth:9},{peso:13.4,desig:"C9x13.4",bf:2.433,tw:0.233,tf:0.413,kdes:1.0,area:3.94,Ix:47.9,Iy:1.76,xbar:0.601,eo:0.742,depth:9}],
+ "C8": [{peso:18.75,desig:"C8x18.75",bf:2.527,tw:0.487,tf:0.39,kdes:0.9375,area:5.51,Ix:44.0,Iy:1.98,xbar:0.565,eo:0.431,depth:8},{peso:13.75,desig:"C8x13.75",bf:2.343,tw:0.303,tf:0.39,kdes:0.9375,area:4.04,Ix:36.1,Iy:1.53,xbar:0.554,eo:0.604,depth:8},{peso:11.5,desig:"C8x11.5",bf:2.26,tw:0.22,tf:0.39,kdes:0.9375,area:3.37,Ix:32.6,Iy:1.32,xbar:0.572,eo:0.697,depth:8}],
+ "C7": [{peso:14.75,desig:"C7x14.75",bf:2.299,tw:0.419,tf:0.366,kdes:0.875,area:4.33,Ix:27.2,Iy:1.38,xbar:0.532,eo:0.441,depth:7},{peso:12.25,desig:"C7x12.25",bf:2.194,tw:0.314,tf:0.366,kdes:0.875,area:3.6,Ix:24.2,Iy:1.17,xbar:0.525,eo:0.538,depth:7},{peso:9.8,desig:"C7x9.8",bf:2.09,tw:0.21,tf:0.366,kdes:0.875,area:2.87,Ix:21.3,Iy:0.968,xbar:0.541,eo:0.647,depth:7}],
+ "C6": [{peso:13,desig:"C6x13",bf:2.157,tw:0.437,tf:0.343,kdes:0.8125,area:3.82,Ix:17.4,Iy:1.05,xbar:0.514,eo:0.38,depth:6},{peso:10.5,desig:"C6x10.5",bf:2.034,tw:0.314,tf:0.343,kdes:0.8125,area:3.07,Ix:15.2,Iy:0.866,xbar:0.5,eo:0.486,depth:6},{peso:8.2,desig:"C6x8.2",bf:1.92,tw:0.2,tf:0.343,kdes:0.8125,area:2.39,Ix:13.1,Iy:0.693,xbar:0.512,eo:0.599,depth:6}],
+ "C5": [{peso:9,desig:"C5x9",bf:1.885,tw:0.325,tf:0.32,kdes:0.75,area:2.64,Ix:8.9,Iy:0.632,xbar:0.478,eo:0.427,depth:5},{peso:6.7,desig:"C5x6.7",bf:1.75,tw:0.19,tf:0.32,kdes:0.75,area:1.97,Ix:7.49,Iy:0.479,xbar:0.484,eo:0.552,depth:5}],
+ "C4": [{peso:7.25,desig:"C4x7.25",bf:1.721,tw:0.321,tf:0.296,kdes:0.75,area:2.13,Ix:4.59,Iy:0.433,xbar:0.459,eo:0.386,depth:4},{peso:6.25,desig:"C4x6.25",bf:1.65,tw:0.247,tf:0.272,kdes:0.75,area:1.77,Ix:null,Iy:null,xbar:0.43,eo:0.44,est:1,depth:4},{peso:5.4,desig:"C4x5.4",bf:1.584,tw:0.184,tf:0.296,kdes:0.75,area:1.58,Ix:3.85,Iy:0.319,xbar:0.457,eo:0.501,depth:4},{peso:4.5,desig:"C4x4.5",bf:1.584,tw:0.125,tf:0.296,kdes:0.75,area:1.38,Ix:3.65,Iy:0.289,xbar:0.493,eo:0.587,depth:4}],
+ "C3": [{peso:6,desig:"C3x6",bf:1.596,tw:0.356,tf:0.273,kdes:0.6875,area:1.76,Ix:2.07,Iy:0.305,xbar:0.455,eo:0.322,depth:3},{peso:5,desig:"C3x5",bf:1.498,tw:0.258,tf:0.273,kdes:0.6875,area:1.47,Ix:1.85,Iy:0.247,xbar:0.439,eo:0.392,depth:3},{peso:4.1,desig:"C3x4.1",bf:1.41,tw:0.17,tf:0.273,kdes:0.6875,area:1.2,Ix:1.66,Iy:0.197,xbar:0.437,eo:0.461,depth:3},{peso:3.5,desig:"C3x3.5",bf:1.372,tw:0.132,tf:0.273,kdes:0.6875,area:1.09,Ix:1.57,Iy:0.169,xbar:0.443,eo:0.493,depth:3}],
+};
+const SLOPE=1/6, MM=25.4;  // v3.1: r2 ya no es fijo, se calcula por seccion (0,5 x punta)
+let cSel="C3", pesoSel="5";
+function seccionActual(){return SECCIONES[cSel].find(s=>String(s.peso)===String(pesoSel))||SECCIONES[cSel][0];}
+const $=id=>document.getElementById(id);
+
+// Geometria fiel, igual que la geometria v2.3 (en pulgadas, y centrado en 0).
+function geom(d){
+  const D=d.depth, TF=d.tf, KDES=d.kdes, theta=Math.atan(SLOPE);
+  const tToe=TF-SLOPE*d.bf/2;
+  const tWeb=TF+SLOPE*(d.bf/2-d.tw);
+  const lt=KDES-tWeb;
+  const radio=lt*Math.tan(Math.PI/4+theta/2);
+  const avgFl=TF-SLOPE*d.tw/2;
+  const phi=Math.PI/2+theta;
+  const areaFilete=lt*radio-0.5*radio*radio*(Math.PI-phi);
+  let area=d.tw*D+2*(d.bf-d.tw)*avgFl+2*areaFilete;
+  const rToe=0.5*tToe, arcIn=Math.PI/2-theta, tang=rToe*Math.tan(arcIn/2);  // v3.1: r2 proporcional, mitad del espesor en punta
+  area-=2*(tang*rToe-0.5*rToe*rToe*arcIn);
+  return {theta,tToe,tWeb,lt,radio,area,arcIn,tang,rToe,diff:100*(area-d.area)/d.area};
+}
+
+function cargarPesos(){
+  const cont=$("pesos"); cont.innerHTML="";
+  SECCIONES[cSel].forEach(s=>{
+    const p=String(s.peso), b=document.createElement("button");
+    b.innerHTML=s.desig+"<small>"+p+" lb/ft</small>";
+    b.onclick=()=>{pesoSel=p;actualizar();};
+    b.id="btn_"+p; cont.appendChild(b);
+  });
+  if(!SECCIONES[cSel].some(s=>String(s.peso)===String(pesoSel))) pesoSel=String(SECCIONES[cSel][0].peso);
+  $("cInfo").textContent=SECCIONES[cSel].length+"  sections in "+cSel+": "+SECCIONES[cSel].map(s=>s.peso).join(", ")+" lb/ft";
+}
+$("selC").onchange=()=>{cSel=$("selC").value;cargarPesos();actualizar();};
+cargarPesos();
+$("largoIn").oninput=()=>{$("largoSlider").value=$("largoIn").value;actualizar();};
+$("largoSlider").oninput=()=>{$("largoIn").value=$("largoSlider").value;actualizar();};
+
+function actualizar(){
+  SECCIONES[cSel].forEach(s=>{const b=$("btn_"+s.peso); if(b) b.classList.toggle("activo",String(s.peso)===String(pesoSel));});
+  const d=seccionActual(), g=geom(d), L=parseFloat($("largoIn").value)||0;
+  $("largoFt").textContent="= "+(L/12).toFixed(2)+" ft";
+  $("largoAviso").textContent=(L<4||L>240)?"Length must be between 4 and 240 in":"";
+  {const PACK=[12,24,36,48,60,72,96,120,144]; const h=$("stepHint"); if(h){ if(PACK.includes(L)){h.textContent="✓ STEP available for this length (pre-generated)."; h.style.color="#34d399";} else {h.textContent="STEP pack lengths are 12, 24, 36, 48, 60, 72, 96, 120, 144 in — for "+L+" in, use .CATScript or .swb (any length)."; h.style.color="#fbbf24";}}}
+  {const h=$("stepHint"); if(h && !esMuestra()){h.textContent="Demo preview — full pack on Gumroad ($10) unlocks downloads for this selection. Free sample: C5x9, 48 in."; h.style.color="#fbbf24";}}
+  const ixiy=(d.Ix===null?"—":d.Ix+" in⁴ / "+d.Iy+" in⁴");
+  $("tabla").innerHTML=
+   "<tr><th>Designation</th><td><b>"+d.desig+"</b></td></tr>"+
+   "<tr><th>Depth d</th><td>"+d.depth.toFixed(3)+" in</td></tr>"+
+   "<tr><th>Flange width bf</th><td>"+d.bf.toFixed(3)+" in</td></tr>"+
+   "<tr><th>Web thickness tw</th><td>"+d.tw.toFixed(3)+" in</td></tr>"+
+   "<tr><th>Flange thickness tf</th><td>"+d.tf.toFixed(3)+" in at mid-flange (bf/2)</td></tr>"+
+   "<tr><th>Toe thickness</th><td>"+g.tToe.toFixed(3)+" in</td></tr>"+
+   "<tr><th>Interior slope</th><td>1:6 (16.67%)</td></tr>"+
+   "<tr><th>kdes (k)</th><td>"+d.kdes+" in</td></tr>"+
+   "<tr><th>Fillet radius</th><td>"+g.radio.toFixed(3)+" in (from kdes "+d.kdes+" in)</td></tr>"+
+   "<tr><th>Interior toe radius r2</th><td>"+g.rToe.toFixed(3)+" in (0.5 × toe thickness, proportional to C; sharp outside corners)</td></tr>"+
+   "<tr><th>CAD area</th><td>"+g.area.toFixed(3)+" in² &nbsp;·&nbsp; AISC "+d.area+" in² ("+g.diff.toFixed(1)+"%)</td></tr>"+
+   "<tr><th>xbar (centroid)</th><td>"+d.xbar+" in from back of web</td></tr>"+
+   "<tr><th>eo (shear center)</th><td>"+(d.est?"*":"")+d.eo.toFixed(3)+" in from back of web"+(d.est?" — estimated, see note below":"")+"</td></tr>"+
+   "<tr><th>T (between fillet toes)</th><td>"+(d.depth-2*d.kdes).toFixed(3)+" in = d − 2k</td></tr>"+
+   "<tr><th>Ix / Iy (table)</th><td>"+ixiy+"</td></tr>";
+  const lb=parseFloat(pesoSel)*(L/12);
+  const masaCadLb=g.area*L*0.2836;
+  $("total").innerHTML="Nominal total weight: <b>"+lb.toFixed(2)+" lb</b> for L = "+L+" in<br>CAD weight (CAD area × L × 0.2836 lb/in³): <b>"+masaCadLb.toFixed(2)+" lb</b>";
+  $("svg").innerHTML=dibujarPerfil(d,g);
+}
+
+function dibujarPerfil(d,g){
+  // v4.0, English, light v3.2 style, now with x, k and T. eo removed from drawing (2026-10-25, too cluttered) — eo stays in table and in CATIA parameters.
+  // x = centroid from back of web, eo = shear center from back of web
+  // (dashed lines: centroid inside, shear center outside to the left).
+  // k = distance from outer face of flange to fillet toe, T = d - 2k,
+  // distance between fillet toes. tf is still measured at bf/2.
+  const S=Math.min(240/d.depth, 180/d.bf), ox=180, oy=185, h=d.depth/2, D=d.depth, KDES=d.kdes, TF=d.tf;
+  const X=x=>ox+x*S, Y=y=>oy+(h-y)*S;
+  const rToe=g.rToe;
+  const A=[0,-h], B=[d.bf,-h], E=[d.bf,h], F=[0,h];
+  const TfB=[d.tw+g.lt*Math.cos(g.theta), -h+g.tWeb-g.lt*Math.sin(g.theta)];
+  const TwB=[d.tw,-h+KDES], TwT=[d.tw,h-KDES];
+  const TfT=[d.tw+g.lt*Math.cos(g.theta), h-g.tWeb+g.lt*Math.sin(g.theta)];
+  const Cb=[d.tw+g.radio,-h+KDES], Ct=[d.tw+g.radio,h-KDES];
+  const CbIn=[d.bf-rToe,-h+g.tToe-g.tang], CtIn=[d.bf-rToe,h-g.tToe+g.tang];
+  const TtoeB=[d.bf,-h+g.tToe-g.tang], TinB=[CbIn[0]+rToe*Math.sin(g.theta), CbIn[1]+rToe*Math.cos(g.theta)];
+  const TtoeT=[d.bf,h-g.tToe+g.tang], TinT=[CtIn[0]+rToe*Math.sin(g.theta), CtIn[1]-rToe*Math.cos(g.theta)];
+  function arco(c,a1,a2,n,rad){
+    let pts=[];
+    for(let i=0;i<=n;i++){
+      const a=(a1+(a2-a1)*i/n)*Math.PI/180;
+      pts.push((X(c[0]+rad*Math.cos(a))).toFixed(1)+","+(Y(c[1]+rad*Math.sin(a))).toFixed(1));
+    }
+    return pts;
+  }
+  const P=p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1);
+  const arcDeg=g.arcIn*180/Math.PI;
+  const pts=[P(A),P(B),P(TtoeB)].concat(arco(CbIn,0,arcDeg,6,rToe),[P(TfB)])
+    .concat(arco(Cb,260.5,180,8,g.radio),[P(TwT)])
+    .concat(arco(Ct,180,99.5,8,g.radio),[P(TinT)])
+    .concat(arco(CtIn,-arcDeg,0,6,rToe),[P(TtoeT),P(E),P(F),P(A)]).join(" ");
+  const dim="#64748b", txtCol="#334155", valCol="#1e293b";
+  function box(cx,cy,w,v){
+    return '<rect x="'+(cx-w/2)+'" y="'+(cy-15)+'" width="'+w+'" height="30" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>'
+      +'<text x="'+cx+'" y="'+(cy+5)+'" fill="'+valCol+'" font-size="14" font-weight="700" text-anchor="middle">'+v+'</text>';
+  }
+  function sym(base,sub){ return base+'<tspan baseline-shift="sub" font-size="10">'+sub+'</tspan>'; }
+  function dimH(x1,x2,y){ return '<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+dim+'" stroke-width="1.5"/>' + '<line x1="'+x1+'" y1="'+(y-7)+'" x2="'+x1+'" y2="'+(y+7)+'" stroke="'+dim+'" stroke-width="1.5"/>' + '<line x1="'+x2+'" y1="'+(y-7)+'" x2="'+x2+'" y2="'+(y+7)+'" stroke="'+dim+'" stroke-width="1.5"/>'; }
+  function dimV(x,y1,y2){ return '<line x1="'+x+'" y1="'+y1+'" x2="'+x+'" y2="'+y2+'" stroke="'+dim+'" stroke-width="1.5"/>' + '<line x1="'+(x-8)+'" y1="'+y1+'" x2="'+(x+8)+'" y2="'+y1+'" stroke="'+dim+'" stroke-width="1.5"/>' + '<line x1="'+(x-8)+'" y1="'+y2+'" x2="'+(x+8)+'" y2="'+y2+'" stroke="'+dim+'" stroke-width="1.5"/>'; }
+  let s='';
+  s+='<rect x="0" y="0" width="700" height="470" fill="#f8fafc" rx="10"/>';
+  // Dashed centroid (xbar) and shear center (eo) lines, before the profile
+  s+='<line x1="'+X(d.xbar)+'" y1="90" x2="'+X(d.xbar)+'" y2="'+(Y(-h)+10)+'" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1"/>';
+  s+='<polygon points="'+pts+'" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round"/>';
+  // x, second row: from back of web to centroid line
+  const yX=90, midXx=(X(0)+X(d.xbar))/2;
+  s+=dimH(X(0),X(d.xbar),yX);
+  s+='<text x="'+midXx+'" y="'+(yX-10)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">x</text>';
+  s+=box(midXx, yX+22, 72, d.xbar.toFixed(3));
+  // bf, third row
+  const yBf=Y(h)-45, midX=(X(0)+X(d.bf))/2;
+  s+=dimH(X(0),X(d.bf),yBf);
+  s+='<text x="'+midX+'" y="'+(yBf-10)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">'+sym('b','f')+'</text>';
+  s+=box(midX, yBf+22, 72, d.bf.toFixed(3));
+  // d, left
+  const xD=120;
+  s+=dimV(xD,Y(h),Y(-h));
+  s+='<text x="70" y="'+(Y(0)-18)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">d</text>';
+  s+=box(70, Y(0)+12, 56, d.depth);
+  // tf, right top, measured at bf/2 with dashed leaders
+  const xTf=X(d.bf)+40, yTop=Y(h), yBot=Y(h-d.tf), tfBoxX=xTf+55, tfBoxY=(yTop+yBot)/2;
+  s+='<line x1="'+X(d.bf/2)+'" y1="'+yTop+'" x2="'+xTf+'" y2="'+yTop+'" stroke="'+dim+'" stroke-dasharray="3 3" stroke-width="1"/>';
+  s+='<line x1="'+X(d.bf/2)+'" y1="'+yBot+'" x2="'+xTf+'" y2="'+yBot+'" stroke="'+dim+'" stroke-dasharray="3 3" stroke-width="1"/>';
+  s+=dimV(xTf,yTop,yBot);
+  s+='<text x="'+tfBoxX+'" y="'+(tfBoxY-22)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">'+sym('t','f')+'</text>';
+  s+=box(tfBoxX, tfBoxY+12, 72, d.tf.toFixed(3));
+  // tw, middle, arrows outward + dashed to box
+  const yTw=Y(0), twBoxX=xTf+55;
+  s+='<polygon points="'+X(0)+','+yTw+' '+(X(0)-12)+','+(yTw-5)+' '+(X(0)-12)+','+(yTw+5)+'" fill="'+dim+'"/>';
+  s+='<polygon points="'+X(d.tw)+','+yTw+' '+(X(d.tw)+12)+','+(yTw-5)+' '+(X(d.tw)+12)+','+(yTw+5)+'" fill="'+dim+'"/>';
+  s+='<line x1="'+X(d.tw)+'" y1="'+yTw+'" x2="'+(twBoxX-36)+'" y2="'+yTw+'" stroke="'+dim+'" stroke-dasharray="3 3" stroke-width="1"/>';
+  s+='<text x="'+twBoxX+'" y="'+(yTw-22)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">'+sym('t','w')+'</text>';
+  s+=box(twBoxX, yTw+12, 72, d.tw.toFixed(3));
+  // T and k, right column, same vertical line: T between fillet toes, k below it
+  const xT=X(d.bf)+140, yTopT=Y(h-d.kdes), yBotT=Y(-h+d.kdes), yBotK=Y(-h), kBoxY=(yBotT+yBotK)/2, Tval=(d.depth-2*d.kdes);
+  s+=dimV(xT,yTopT,yBotT);
+  s+=dimV(xT,yBotT,yBotK);
+  s+='<text x="'+(xT+55)+'" y="'+(Y(0)-22)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">T</text>';
+  s+=box(xT+55, Y(0)+12, 72, Tval.toFixed(3));
+  s+='<text x="'+(xT+55)+'" y="'+(kBoxY-22)+'" fill="'+txtCol+'" font-size="16" text-anchor="middle">k</text>';
+  s+=box(xT+55, kBoxY+12, 72, d.kdes);
+  // Legend, two lines, gray
+  s+='<text x="350" y="448" fill="#64748b" font-size="11" text-anchor="middle">Slope 1:6 · Fillet radius '+(g.radio).toFixed(3)+' in · Toe radius r2 '+(g.rToe).toFixed(3)+' in · Sharp outside corners · L = Z axis · Symmetric about ZX plane</text>';
+  s+='<text x="350" y="464" fill="#64748b" font-size="11" text-anchor="middle">x = centroid from back of web · k = fillet toe distance · T = distance between fillet toes</text>';
+  return s;
+}
+
+function fmtInTxt(v){
+  if(Math.abs(v-Math.round(v))<0.005) return String(Math.round(v));
+  return v.toFixed(2).replace(/0+$/,'').replace(/\.$/,'');
+}
+function partNameIn(){
+  const d=seccionActual();
+  return d.desig.replace('.','_')+"_L"+fmtInTxt(parseFloat($("largoIn").value)||0).replace('.','_')+"in";
+}
+function descargarArchivo(nombre, contenido){
+  const blob=new Blob([contenido],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=nombre; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function generarCATScript(){
+  const d=seccionActual(), L=parseFloat($("largoIn").value)||0, pn=partNameIn();
+  const IN2MM=25.4, SLOPE=1/6, PI=Math.PI;
+  const theta=Math.atan(SLOPE), tToe=d.tf-SLOPE*d.bf/2, tWeb=d.tf+SLOPE*(d.bf/2-d.tw);
+  const lt=d.kdes-tWeb, radio=lt*Math.tan(PI/4+theta/2), rToe=0.5*tToe, arc=PI/2-theta, tang=rToe*Math.tan(arc/2);
+  const f=(x)=> (x*IN2MM).toFixed(4);
+  const h=d.depth*IN2MM/2, bf=d.bf*IN2MM, tw=d.tw*IN2MM, kdes=d.kdes*IN2MM;
+  const tToeMM=tToe*IN2MM, tWebMM=tWeb*IN2MM, ltMM=lt*IN2MM, radioMM=radio*IN2MM, rToeMM=rToe*IN2MM, tangMM=tang*IN2MM;
+  const pts={
+    A:[0,-h], B:[bf,-h], Ttb:[bf,-h+tToeMM-tangMM],
+    CbIn:[bf-rToeMM,-h+tToeMM-tangMM],
+    TinB:[bf-rToeMM+rToeMM*Math.sin(theta),-h+tToeMM-tangMM+rToeMM*Math.cos(theta)],
+    TfB:[tw+ltMM*Math.cos(theta),-h+tWebMM-ltMM*Math.sin(theta)],
+    Cb:[tw+radioMM,-h+kdes], TwB:[tw,-h+kdes], TwT:[tw,h-kdes], Ct:[tw+radioMM,h-kdes],
+    TfT:[tw+ltMM*Math.cos(theta),h-tWebMM+ltMM*Math.sin(theta)],
+    CtIn:[bf-rToeMM,h-tToeMM+tangMM],
+    TinT:[bf-rToeMM+rToeMM*Math.sin(theta),h-tToeMM+tangMM-rToeMM*Math.cos(theta)],
+    Ttt:[bf,h-tToeMM+tangMM], E:[bf,h], F:[0,h]
+  };
+  const p=(k)=> f(pts[k][0]/IN2MM*IN2MM); // placeholder, replaced below
+  // Build VBScript with mm coordinates directly (pts are already mm)
+  const mm=(k,i)=> pts[k][i].toFixed(3);
+  let s='';
+  s+='Language="VBSCRIPT"\n';
+  s+="' C-Channel Generator - generated from the HTML configurator\n";
+  s+="' Selection: "+d.desig+"  Length: "+L+" in  Part: "+pn+"\n";
+  s+="' No prompts: run it in CATIA (Tools > Macro > Macros) and it creates exactly this channel.\n";
+  s+="' Faithful profile: slope 1:6, tf at mid-flange, fillet from kdes, INTERIOR toe r2, sharp outside corners.\n";
+  s+='Sub CATMain()\n';
+  s+='    Const IN2MM = 25.4\n    Const PI = 3.14159265358979\n';
+  s+='    Dim oDoc, oPart, oBody, oSketch, oFactory, oPad, oParams\n';
+  s+='    Set oDoc = CATIA.Documents.Add("Part")\n    Set oPart = oDoc.Part\n';
+  s+='    On Error Resume Next\n';
+  s+='    oDoc.Product.PartNumber = "'+pn+'"\n';
+  s+='    Set oParams = oPart.Parameters\n';
+  s+='    oParams.CreateString "Designation", "'+d.desig+'"\n';
+  s+='    oParams.CreateDimension "Depth", "LENGTH", '+f(d.depth)+'\n';
+  s+='    oParams.CreateDimension "FlangeWidth", "LENGTH", '+f(d.bf)+'\n';
+  s+='    oParams.CreateDimension "WebThickness", "LENGTH", '+f(d.tw)+'\n';
+  s+='    oParams.CreateDimension "FlangeThickness", "LENGTH", '+f(d.tf)+'\n';
+  s+='    oParams.CreateDimension "Kdes", "LENGTH", '+f(d.kdes)+'\n';
+  s+='    oParams.CreateDimension "Length", "LENGTH", '+(L*IN2MM).toFixed(3)+'\n';
+  s+='    oParams.CreateReal "Length_in", '+L+'\n';
+  s+='    oParams.CreateReal "Weight_lb_ft", '+d.peso+'\n';
+  s+='    oParams.CreateDimension "FilletRadius", "LENGTH", '+radioMM.toFixed(3)+'\n';
+  s+='    oParams.CreateDimension "ToeRadius", "LENGTH", '+rToeMM.toFixed(3)+'\n';
+  s+='    On Error GoTo 0\n';
+  s+='    Set oBody = oPart.Bodies.Item(1)\n';
+  s+='    oPart.InWorkObject = oBody\n';
+  s+='    Set oSketch = oBody.Sketches.Add(oPart.OriginElements.PlaneXY)\n';
+  s+='    oSketch.Name = "SK_Perfil_'+d.desig.replace('.','_')+'"\n';
+  s+='    On Error Resume Next\n    oSketch.SetAbsoluteAxisData Array(0, 0, 0, 1, 0, 0, 0, 1, 0)\n    On Error GoTo 0\n';
+  s+='    Set oFactory = oSketch.OpenEdition()\n';
+  const lineC=(v,a,b)=> '    Set '+v+' = oFactory.CreateLine('+mm(a,0)+', '+mm(a,1)+', '+mm(b,0)+', '+mm(b,1)+')\n';
+  const circC=(v,c,r,a1,a2)=> '    Set '+v+' = oFactory.CreateCircle('+mm(c,0)+', '+mm(c,1)+', '+r.toFixed(3)+', '+a1+', '+a2+')\n';
+  s+='    Dim oLineBot, oLineToeFaceBot, oArcToeBot, oLineSlopeBot, oArcFilBot, oLineWeb, oArcFilTop, oLineSlopeTop, oArcToeTop, oLineToeFaceTop, oLineTop, oLineBack, oConstraints, oConstraint\n';
+  s+=lineC('oLineBot','A','B')+lineC('oLineToeFaceBot','B','Ttb');
+  s+=circC('oArcToeBot','CbIn',rToeMM,'0',''+(arc).toFixed(6));
+  s+=lineC('oLineSlopeBot','TinB','TfB');
+  s+=circC('oArcFilBot','Cb',radioMM,''+(PI).toFixed(6),''+(2*PI-(PI/2+theta)).toFixed(6));
+  s+=lineC('oLineWeb','TwB','TwT');
+  s+=circC('oArcFilTop','Ct',radioMM,''+(PI/2+theta).toFixed(6),''+(PI).toFixed(6));
+  s+=lineC('oLineSlopeTop','TfT','TinT');
+  s+=circC('oArcToeTop','CtIn',rToeMM,''+(-arc).toFixed(6),'0');
+  s+=lineC('oLineToeFaceTop','Ttt','E')+lineC('oLineTop','E','F')+lineC('oLineBack','F','A');
+  s+="    ' 8 tangent relations + coincidence at every shared point, before CloseEdition. 4 = catCstTypeTangency, 2 = catCstTypeOn. Tangency alone lets the solver slide the tangent point and open the profile; coincidence locks each shared endpoint.\n";
+  s+='    Set oConstraints = oSketch.Constraints\n';
+  s+='    On Error Resume Next\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcToeBot), oPart.CreateReferenceFromObject(oLineToeFaceBot))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcToeBot.StartPoint), oPart.CreateReferenceFromObject(oLineToeFaceBot.EndPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcToeBot), oPart.CreateReferenceFromObject(oLineSlopeBot))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcToeBot.EndPoint), oPart.CreateReferenceFromObject(oLineSlopeBot.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcFilBot), oPart.CreateReferenceFromObject(oLineSlopeBot))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcFilBot.EndPoint), oPart.CreateReferenceFromObject(oLineSlopeBot.EndPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcFilBot), oPart.CreateReferenceFromObject(oLineWeb))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcFilBot.StartPoint), oPart.CreateReferenceFromObject(oLineWeb.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcFilTop), oPart.CreateReferenceFromObject(oLineWeb))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcFilTop.EndPoint), oPart.CreateReferenceFromObject(oLineWeb.EndPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcFilTop), oPart.CreateReferenceFromObject(oLineSlopeTop))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcFilTop.StartPoint), oPart.CreateReferenceFromObject(oLineSlopeTop.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcToeTop), oPart.CreateReferenceFromObject(oLineSlopeTop))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcToeTop.StartPoint), oPart.CreateReferenceFromObject(oLineSlopeTop.EndPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(4, oPart.CreateReferenceFromObject(oArcToeTop), oPart.CreateReferenceFromObject(oLineToeFaceTop))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oArcToeTop.EndPoint), oPart.CreateReferenceFromObject(oLineToeFaceTop.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oLineBot.EndPoint), oPart.CreateReferenceFromObject(oLineToeFaceBot.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oLineToeFaceTop.EndPoint), oPart.CreateReferenceFromObject(oLineTop.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oLineTop.EndPoint), oPart.CreateReferenceFromObject(oLineBack.StartPoint))\n';
+  s+='    Set oConstraint = oConstraints.AddBiEltCst(2, oPart.CreateReferenceFromObject(oLineBack.EndPoint), oPart.CreateReferenceFromObject(oLineBot.StartPoint))\n';
+  s+='    On Error GoTo 0\n';
+  s+='    oSketch.CloseEdition\n';
+  s+='    oPart.InWorkObject = oBody\n';
+  s+='    Set oPad = oPart.ShapeFactory.AddNewPad(oSketch, '+(L*IN2MM).toFixed(3)+')\n';
+  s+='    oPad.Name = "Pad_'+d.desig.replace('.','_')+'"\n';
+  s+='    oPart.Update\n';
+  s+='    oPart.InWorkObject = oPad\n';
+  s+='    MsgBox "'+d.desig+'  L = '+L+' in created in CATIA.", vbInformation, "C-Channel Generator"\n';
+  s+='End Sub\n';
+  return s;
+}
+function usarMuestra(){cSel="C5"; pesoSel="9"; $("selC").value="C5"; $("largoIn").value="48"; $("largoSlider").value="48"; cargarPesos(); actualizar(); $("estado").textContent="Free sample selected: C5x9, 48 in — now use the download buttons below.";}
+function esMuestra(){return partNameIn()==="C5x9_L48in";}
+function descargarCATScript(){
+  const L=parseFloat($("largoIn").value)||0; if(L<4||L>240){$("estado").textContent="Choose a length between 4 and 240 in first."; return;}
+  if(!esMuestra()){$("estado").textContent="Demo preview: downloads are locked except the free sample (C5x9, 48 in). Buy the full pack on Gumroad ($10) to unlock any section and length."; return;}
+  const pn=partNameIn(); descargarArchivo(pn+'.CATScript', generarCATScript()); $("estado").textContent="⬇ Downloaded "+pn+".CATScript — run it in CATIA (Tools > Macro > Macros).";
+}
+function generarBAS(){
+  const d=seccionActual(), L=parseFloat($("largoIn").value)||0, pn=partNameIn();
+  const SLOPE=1/6, theta=Math.atan(SLOPE), tToe=d.tf-SLOPE*d.bf/2, tWeb=d.tf+SLOPE*(d.bf/2-d.tw);
+  const lt=d.kdes-tWeb, radio=lt*Math.tan(Math.PI/4+theta/2), rToe=0.5*tToe, arc=Math.PI/2-theta, tang=rToe*Math.tan(arc/2);
+  // SolidWorks API uses METERS for sketch coordinates, regardless of document units.
+  const M=0.0254; // inch to meter
+  const h=d.depth/2, bf=d.bf, tw=d.tw;
+  const pts={
+    A:[0,-h], B:[bf,-h], Ttb:[bf,-h+tToe-tang],
+    CbIn:[bf-rToe,-h+tToe-tang],
+    TinB:[bf-rToe+rToe*Math.sin(theta),-h+tToe-tang+rToe*Math.cos(theta)],
+    TfB:[tw+lt*Math.cos(theta),-h+tWeb-lt*Math.sin(theta)],
+    Cb:[tw+radio,-h+d.kdes], TwB:[tw,-h+d.kdes], TwT:[tw,h-d.kdes], Ct:[tw+radio,h-d.kdes],
+    TfT:[tw+lt*Math.cos(theta),h-tWeb+lt*Math.sin(theta)],
+    CtIn:[bf-rToe,h-tToe+tang],
+    TinT:[bf-rToe+rToe*Math.sin(theta),h-tToe+tang-rToe*Math.cos(theta)],
+    Ttt:[bf,h-tToe+tang], E:[bf,h], F:[0,h]
+  };
+  const m=(k,i)=> (pts[k][i]*M).toFixed(6);
+    let s='';
+  s+="Attribute VB_Name = \""+pn+"\"\n";
+  s+="' C-Channel Generator for SolidWorks - generated from the HTML configurator\n";
+  s+="' Selection: "+d.desig+"  Length: "+L+" in  Part: "+pn+"\n";
+  s+="' HOW TO USE (v1.2, importable - no copy-paste):\n";
+  s+="'   1) Open a NEW blank part in SolidWorks, then Tools > Macro > New, save the .swp\n";
+  s+="'   2) In the VBA editor, right-click Module1 > Remove Module1, click No (do not export)\n";
+  s+="'   3) File > Import File, select this .bas - it appears as module "+pn+" with full code\n";
+  s+="'   4) Run (F5). It creates one sketch on the Front Plane and one extrude (meters).\n";
+  s+="'   5) Save As "+pn+".SLDPRT. Save the .swp too if you want to reuse this macro.\n";
+  s+="' Faithful profile: slope 1:6, tf at mid-flange, fillet from kdes, INTERIOR toe r2, sharp outside corners.\n";
+  s+="' NOTE: SolidWorks API sketch coordinates are in METERS. All values below are already in meters.\n";
+  s+="' Arcs use CreateArc with explicit center, start, end, Direction. AddToDB=True while creating segments (prevents SW snapping, e.g. web thickness), then AddToDB=False before tangent relations. Toe arcs CCW (+1, convex tip), fillet arcs CW (-1, concave valley). 8 tangent relations (sgTANGENT) are added in-sketch, before closing the sketch, so arcs are tangent to web, slope and toe face in SolidWorks.\n";
+  s+="Dim swApp As Object\nDim Part As Object\n\nSub main()\n";
+  s+="    Set swApp = Application.SldWorks\n";
+  s+="    Set Part = swApp.ActiveDoc\n";
+  s+="    If Part Is Nothing Then\n";
+  s+='        MsgBox "Open a new blank part first, then run this macro again.", vbExclamation, "C-Channel Generator"\n';
+  s+="        Exit Sub\n    End If\n";
+  s+="    Dim skMgr As Object\n    Set skMgr = Part.SketchManager\n";
+  s+="    Part.ClearSelection2 True\n";
+  s+="    Dim boolstatus As Boolean\n";
+  s+="    boolstatus = Part.Extension.SelectByID2(\"Front Plane\", \"PLANE\", 0, 0, 0, False, 0, Nothing, 0)\n";
+  s+="    skMgr.InsertSketch True\n";
+  s+="    skMgr.AddToDB = True\n";
+  const lineSeg=(v,a,b)=> "    Set "+v+" = skMgr.CreateLine("+m(a,0)+", "+m(a,1)+", 0, "+m(b,0)+", "+m(b,1)+", 0)\n";
+  const arcSeg=(v,c,a,b,dir)=> "    Set "+v+" = skMgr.CreateArc("+m(c,0)+", "+m(c,1)+", 0, "+m(a,0)+", "+m(a,1)+", 0, "+m(b,0)+", "+m(b,1)+", 0, "+dir+")\n";
+  s+="    Dim segBot As Object, segToeFaceBot As Object, segToeArcBot As Object, segSlopeBot As Object, segFilArcBot As Object, segWeb As Object, segFilArcTop As Object, segSlopeTop As Object, segToeArcTop As Object, segToeFaceTop As Object, segTop As Object, segBack As Object\n";
+  s+=lineSeg('segBot','A','B')+lineSeg('segToeFaceBot','B','Ttb');
+  s+=arcSeg('segToeArcBot','CbIn','Ttb','TinB',1);
+  s+=lineSeg('segSlopeBot','TinB','TfB');
+  s+=arcSeg('segFilArcBot','Cb','TfB','TwB',-1);
+  s+=lineSeg('segWeb','TwB','TwT');
+  s+=arcSeg('segFilArcTop','Ct','TwT','TfT',-1);
+  s+=lineSeg('segSlopeTop','TfT','TinT');
+  s+=arcSeg('segToeArcTop','CtIn','TinT','Ttt',1);
+  s+=lineSeg('segToeFaceTop','Ttt','E')+lineSeg('segTop','E','F')+lineSeg('segBack','F','A');
+  s+="    skMgr.AddToDB = False\n";
+  s+="    ' 8 tangent relations, before closing sketch. On Error Resume Next so a failed relation does not stop extrusion.\n";
+  s+="    On Error Resume Next\n";
+  s+="    Part.ClearSelection2 True: segToeArcBot.Select2 False, 0: segToeFaceBot.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segToeArcBot.Select2 False, 0: segSlopeBot.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segFilArcBot.Select2 False, 0: segSlopeBot.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segFilArcBot.Select2 False, 0: segWeb.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segFilArcTop.Select2 False, 0: segWeb.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segFilArcTop.Select2 False, 0: segSlopeTop.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segToeArcTop.Select2 False, 0: segSlopeTop.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True: segToeArcTop.Select2 False, 0: segToeFaceTop.Select2 True, 0: Part.SketchAddConstraints \"sgTANGENT\"\n";
+  s+="    Part.ClearSelection2 True\n";
+  s+="    On Error GoTo 0\n";
+  s+="    skMgr.InsertSketch True\n";
+  s+="    ' Extrude: blind, length = "+L+" in = "+(L*M).toFixed(6)+" m. If your SolidWorks version\n";
+  s+="    ' uses FeatureExtrusion3, the correct method in SolidWorks 2024 (FeatureExtrude2 does not exist in IFeatureManager).\n";
+  s+="    Dim myFeature As Object\n";
+  s+="    Set myFeature = Part.FeatureManager.FeatureExtrusion3(True, False, False, 0, 0, "+(L*M).toFixed(6)+", 0, False, False, False, False, 0, 0, False, False, False, False, True, False, True, 0, 0, False)\n";
+  s+="    ' Name the feature in the tree (IFeature.Name, visible after rebuild)\n";
+  s+="    myFeature.Name = \""+pn+"\"\n";
+  s+="    Part.EditRebuild3\n";
+  s+="    ' Custom properties, file level (CustomPropertyManager \"\"), text = 30, replace = 1\n";
+  s+="    Dim swCustPropMgr As Object\n";
+  s+="    Set swCustPropMgr = Part.Extension.CustomPropertyManager(\"\")\n";
+  s+="    On Error Resume Next\n";
+  s+="    swCustPropMgr.Add3 \"PartNumber\", 30, \""+pn+"\", 1\n";
+  s+="    swCustPropMgr.Add3 \"Description\", 30, \"C-Channel "+d.desig+", "+L+" in\", 1\n";
+  s+="    swCustPropMgr.Add3 \"Section\", 30, \""+d.desig+"\", 1\n";
+  s+="    swCustPropMgr.Add3 \"Length\", 30, \""+L+" in\", 1\n";
+  s+="    On Error GoTo 0\n";
+  s+="    ' Save with the correct name, in the same folder as this macro\n";
+  s+="    Dim macroPath As String\n";
+  s+="    Dim savePath As String\n";
+  s+="    Dim longstatus As Long\n";
+  s+="    macroPath = swApp.GetCurrentMacroPathName\n";
+  s+="    savePath = Left(macroPath, InStrRev(macroPath, \"\\\")) & \""+pn+".SLDPRT\"\n";
+  s+="    longstatus = Part.SaveAs3(savePath, 0, 0)\n";
+  s+="    Part.ClearSelection2 True\n";
+  s+='    MsgBox "'+d.desig+'  L = '+L+' in created and saved as '+pn+'.SLDPRT in the macro folder.", vbInformation, "C-Channel Generator"\n';
+  s+="End Sub\n";
+  return s;
+}
+function descargarBAS(){
+  descargarArchivo(partNameIn()+'.bas', generarBAS());
+}
+function generarSWB(){
+  let s = generarBAS();
+  s = s.replace(/^Attribute VB_Name = "[^"]*"\n/, "");
+  s = s.replace("' HOW TO USE (v1.2, importable - no copy-paste):", "' HOW TO USE (v1.3 .swb - run directly, no editor, no import, no copy-paste):");
+  s = s.replace("'   1) Open a NEW blank part in SolidWorks, then Tools > Macro > New, save the .swp", "'   1) Open a NEW blank part in SolidWorks");
+  s = s.replace("'   2) In the VBA editor, right-click Module1 > Remove Module1, click No (do not export)", "'   2) Tools > Macro > Run, select this .swb file (if needed, change file type to SWBasic Macros)");
+  s = s.replace("'      This removes the empty stub Sub main() that would conflict with this file.\n", "");
+  s = s.replace(/'   3\) File > Import File, select this \.bas - it appears as module .* with full code/, "'   3) It creates one sketch on the Front Plane and one extrude (length in meters).");
+  s = s.replace(/'   4\) Run \(F5\)\..*\n/, "'   4) Save As " + partNameIn() + ".SLDPRT\n");
+  s = s.replace(/'   5\) Save As .*\.SLDPRT\. Save the \.swp too if you want to reuse this macro\.\n/, "");
+  return s;
+}
+function descargarSWB(){
+  const L=parseFloat($("largoIn").value)||0; if(L<4||L>240){$("estado").textContent="Choose a length between 4 and 240 in first."; return;}
+  if(!esMuestra()){$("estado").textContent="Demo preview: downloads are locked except the free sample (C5x9, 48 in). Buy the full pack on Gumroad ($10) to unlock any section and length."; return;}
+  const pn=partNameIn(); descargarArchivo(pn+'.swb', generarSWB()); $("estado").textContent="⬇ Downloaded "+pn+".swb — run it in SolidWorks (Tools > Macro > Run). It will save "+pn+".SLDPRT in the macro folder.";
+}
+function descargarSTEP(){
+  const PACK=[12,24,36,48,60,72,96,120,144];
+  const d=seccionActual(), L=parseFloat($("largoIn").value)||0, pn=partNameIn();
+  if(L<4||L>240){$("estado").textContent="Choose a length between 4 and 240 in first."; return;}
+  if(!esMuestra()){$("estado").textContent="Demo preview: downloads are locked except the free sample (C5x9, 48 in). Buy the full pack on Gumroad ($10) to unlock any section and length."; return;}
+  if(PACK.includes(L)){
+    const a=document.createElement('a');
+    a.href='step/'+pn+'.stp'; a.download=pn+'.stp'; a.click();
+    $("estado").textContent="⬇ Downloading STEP pack file: "+pn+".stp  ("+L+" in, pre-generated, faithful profile)";
+  } else {
+    $("estado").textContent="STEP pack lengths are: "+PACK.join(", ")+" in.\nYou selected "+L+" in, which is not in the pack. Choose one of those lengths for STEP, or use Download .CATScript / .swb — those are generated in the browser for any length, exactly as selected.";
+  }
+}
+
+actualizar();
+</script>
+</body>
+</html>
